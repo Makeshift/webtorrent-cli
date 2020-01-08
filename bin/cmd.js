@@ -20,6 +20,7 @@ const prettierBytes = require('prettier-bytes')
 const stripIndent = require('common-tags/lib/stripIndent')
 const vlcCommand = require('vlc-command')
 const WebTorrent = require('webtorrent')
+const URL = require('url').URL
 
 const { version: webTorrentCliVersion } = require('../package.json')
 const { version: webTorrentVersion } = require('webtorrent/package.json')
@@ -77,7 +78,9 @@ const argv = minimist(process.argv.slice(2), {
     'blocklist',
     'subtitles',
     'on-done',
-    'on-exit'
+    'on-exit',
+      'ip',
+      'fqdn'
   ],
   default: {
     port: 8000,
@@ -313,6 +316,8 @@ function runHelp () {
       --on-done [script]        run script after torrent download is done
       --on-exit [script]        run script before program exit
       --verbose                 show torrent protocol details
+      --ip [x.x.x.x]            specify our IP in case we can't get it dynamically (multiple interfaces etc.)
+      --fqdn [https://address/] replace our IP with an FQDN for use behind a reverse proxy
   `)
 }
 
@@ -470,10 +475,10 @@ function runDownload (torrentId) {
 
   function onSelection (index) {
     href = (argv.airplay || argv.chromecast || argv.xbmc || argv.dlna)
-      ? `http://${networkAddress()}:${server.address().port}`
+      ? argv.fqdn ? argv.fqdn : `http://${argv.ip || networkAddress()}:${server.address().port}`
       : `http://localhost:${server.address().port}`
 
-    href += `/${index}/${encodeURIComponent(torrent.files[index].name)}`
+    href = new URL(`/${index}/${encodeURIComponent(torrent.files[index].name)}`, href).href
 
     if (playerName) {
       torrent.files[index].select()
