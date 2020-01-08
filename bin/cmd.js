@@ -79,8 +79,8 @@ const argv = minimist(process.argv.slice(2), {
     'subtitles',
     'on-done',
     'on-exit',
-      'ip',
-      'fqdn'
+    'ip',
+    'fqdn'
   ],
   default: {
     port: 8000,
